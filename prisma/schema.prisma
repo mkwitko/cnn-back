@@ -2,10 +2,77 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
+}
+
+model users {
+    id        Int       @id @default(autoincrement())
+    password  String    @db.VarChar(255)
+    created   DateTime  @default(now()) @db.Date()
+    updated   DateTime? @db.Date()
+    deleted   DateTime? @db.Date()
+    name      String?   @db.VarChar(255)
+    email     String?   @db.VarChar(255)
+    birthdate DateTime? @db.Date
+    super     Int?      @default(0)
+    token     String?   @db.VarChar(255)
+    consent   consent[]
+
+    @@unique([id])
+}
+
+model states {
+    id        Int       @id @default(autoincrement())
+    created   DateTime  @default(now()) @db.Date()
+    updated   DateTime? @db.Date()
+    deleted   DateTime? @db.Date()
+    name      String?   @db.VarChar(255)
+    shortName String?   @db.VarChar(2)
+    country   country?  @relation(fields: [countryId], references: [id])
+    countryId Int?
+
+    @@unique([id])
+}
+
+model consent {
+    id        Int       @id @default(autoincrement())
+    created   DateTime  @default(now()) @db.Date()
+    updated   DateTime? @db.Date()
+    deleted   DateTime? @db.Date()
+    userId    Int?      @default(0)
+    consentId Int?      @default(1)
+    value     Int?      @default(0)
+
+    user        users?         @relation(fields: [userId], references: [id])
+    consentType consent_types? @relation(fields: [consentId], references: [id])
+
+    @@unique([id])
+}
+
+model consent_types {
+    id      Int       @id @default(autoincrement())
+    created DateTime  @default(now()) @db.Date()
+    updated DateTime? @db.Date()
+    deleted DateTime? @db.Date()
+    name    String?   @db.VarChar(255)
+    consent consent[]
+
+    @@unique([id])
+}
+
+model country {
+    id      Int       @id @default(autoincrement())
+    created DateTime  @default(now()) @db.Date()
+    updated DateTime? @db.Date()
+    deleted DateTime? @db.Date()
+    name    String?   @db.VarChar(255)
+    states  states[]
+
+    @@unique([id])
 }
